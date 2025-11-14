@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Speech Emotion Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🎙 Speech Emotion Dashboard</h1>
+
+        <!-- Upload existing file -->
+        <form id="uploadForm" method="POST" enctype="multipart/form-data">
+            <h3>Upload an Existing Audio File</h3>
+            <input type="file" name="file" accept="audio/*" required>
+            <br><br>
+            <button type="submit">Upload & Predict</button>
+        </form>
+
+        <hr>
+
+        <!-- Record audio manually -->
+        <h3>Record Audio Manually</h3>
+        <button onclick="startRecording()">🎤 Start Recording</button>
+        <button onclick="stopRecording()">⏹ Stop & Submit</button>
+        <form id="recordForm" method="POST" enctype="multipart/form-data">
+            <input type="file" id="recordedFileInput" name="recorded_data" style="display:none;">
+        </form>
+
+        {% if predictions %}
+        <div class="results">
+            <h2>🔎 Predictions</h2>
+            <div class="card emotion">Emotion: {{ predictions.emotion }}</div>
+            <div class="card gender">Gender: {{ predictions.gender }}</div>
+            <div class="card energy">Energy Level: {{ predictions.energy }}</div>
+            <div class="card stress">Stress Level: {{ predictions.stress }}</div>
+        </div>
+
+        <div class="graphs">
+            <h2>📊 Visual Representation</h2>
+            <img src="{{ url_for('static', filename=graphs['emotion']) }}" width="400"><br>
+            <img src="{{ url_for('static', filename=graphs['gender']) }}" width="400"><br>
+            <img src="{{ url_for('static', filename=graphs['energy']) }}" width="400"><br>
+            <img src="{{ url_for('static', filename=graphs['stress']) }}" width="400"><br>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        let mediaRecorder;
+        let audioChunks = [];
+
+        async function startRecording() {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            audioChunks = [];
+
+            mediaRecorder.ondataavailable = e => {
+                audioChunks.push(e.data);
+            };
+
+            mediaRecorder.start();
+        }
+
+        function stopRecording() {
+            mediaRecorder.stop();
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                const file = new File([audioBlob], "recorded_audio.wav", { type: 'audio/wav' });
+
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(file);
+
+                const recordedFileInput = document.getElementById('recordedFileInput');
+                recordedFileInput.files = dataTransfer.files;
+
+                document.getElementById('recordForm').submit();
+            };
+        }
+    </script>
+</body>
+</html>
