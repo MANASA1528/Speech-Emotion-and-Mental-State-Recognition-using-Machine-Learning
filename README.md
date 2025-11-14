@@ -1,0 +1,2 @@
+# Speech-Emotion-and-Mental-State-Recognition-using-Machine-Learning
+A machine learning system that analyzes speech signals to detect emotions like happy, sad, angry, and neutral. It extracts audio features (MFCC, pitch, chroma, energy) and uses trained ML models to classify emotion, stress, and energy levels. This project helps understand a speaker’s emotional and mental state from voice patterns in real time.
